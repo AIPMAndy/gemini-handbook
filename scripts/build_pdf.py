@@ -177,7 +177,7 @@ def pdf(data):
     # PDF bytes should be reproducible across builds.
     rl_config.invariant = 1
     doc.build(s,onFirstPage=decorate,onLaterPages=decorate,
-              canvasmaker=lambda *args, **kwargs: Canvas(*args, invariant=1, **kwargs))
+              canvasmaker=lambda *args, **kwargs: Canvas(*args, **{**kwargs, 'invariant': 1}))
     print(f"Built {DEST} ({DEST.stat().st_size:,} bytes)")
     return DEST
 
