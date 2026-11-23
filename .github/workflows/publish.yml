@@ -1,0 +1,147 @@
+name: Build Gemini handbook PDF, QA and Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data.js'
+      - 'index.html'
+      - 'site.js'
+      - 'style.css'
+      - 'print.html'
+      - 'print.js'
+      - 'scripts/**'
+      - 'README.md'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: gemini-handbook-standalone
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    outputs:
+      pages_mode: ${{ steps.pages-mode.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Chinese font and PDF dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-arphic-gbsn00lp
+          python -m pip install 'reportlab>=4.2,<5' 'PyMuPDF>=1.24,<2'
+      - name: Static JS syntax validation
+        run: |
+          node --check data.js
+          node --check site.js
+          node --check print.js
+      - name: Build complete Chinese PDF from one course source
+        run: python scripts/build_pdf.py
+      - name: Verify PDF chapter coverage, links, extraction and page boundaries
+        run: python scripts/check_release.py
+      - name: Install Playwright for mobile and desktop browser regression
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Exercise mobile and desktop interactions in Chromium
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8123 --bind 127.0.0.1 >/tmp/gemini-standalone-test.log 2>&1 &
+          node scripts/browser_smoke.mjs
+      - name: Archive verified PDF and mobile screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-handbook-verified-release
+          path: |
+            downloads/gemini-practical-handbook.pdf
+            qa/*.png
+          retention-days: 30
+      - name: Detect existing Pages publishing source
+        id: pages-mode
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if mode="$(gh api repos/${{ github.repository }}/pages --jq '.build_type' 2>/dev/null)"; then
+            echo "mode=$mode" >> "$GITHUB_OUTPUT"
+            echo "Pages configured: $mode"
+          else
+            echo "mode=unconfigured" >> "$GITHUB_OUTPUT"
+            echo "::warning::Enable GitHub Pages under repository Settings → Pages; select main/(root) or GitHub Actions."
+          fi
+      - name: Commit generated PDF to this source repository without force push
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp downloads/gemini-practical-handbook.pdf /tmp/gemini-standalone-pdf
+          original_source_sha="$(git rev-parse HEAD:data.js)"
+          completed=0
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            latest_source_sha="$(git rev-parse origin/main:data.js)"
+            if [[ "$original_source_sha" != "$latest_source_sha" ]]; then
+              echo "::warning::Source changed during build; skipping obsolete PDF release."
+              exit 0
+            fi
+            git reset --hard origin/main
+            mkdir -p downloads
+            cp /tmp/gemini-standalone-pdf downloads/gemini-practical-handbook.pdf
+            git add -f downloads/gemini-practical-handbook.pdf
+            if git diff --cached --quiet; then
+              echo "Exact built PDF is already committed"
+              completed=1
+              break
+            fi
+            git commit -m 'docs: publish source-matched Gemini PDF [skip ci]'
+            if git push origin HEAD:main; then
+              completed=1
+              break
+            fi
+            sleep 2
+          done
+          test "$completed" = 1
+      - name: Prepare minimal public Pages artifact
+        if: steps.pages-mode.outputs.mode == 'workflow'
+        run: |
+          mkdir -p _site/downloads
+          cp index.html style.css site.js data.js print.html print.js favicon.svg llms.txt robots.txt sitemap.xml _site/
+          cp downloads/gemini-practical-handbook.pdf _site/downloads/
+          touch _site/.nojekyll
+      - name: Configure existing GitHub Actions Pages source
+        if: steps.pages-mode.outputs.mode == 'workflow'
+        uses: actions/configure-pages@v5
+      - name: Upload Pages deployment artifact
+        if: steps.pages-mode.outputs.mode == 'workflow'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+  deploy-if-actions:
+    needs: build
+    if: needs.build.outputs.pages_mode == 'workflow'
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: https://aipmandy.github.io/gemini-handbook/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+  live:
+    needs: [build, deploy-if-actions]
+    if: always() && needs.build.result == 'success' && (needs.deploy-if-actions.result == 'success' || needs.deploy-if-actions.result == 'skipped') && needs.build.outputs.pages_mode != 'unconfigured'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify project website (not old subpath) and real PDF over HTTPS
+        run: python3 scripts/check_live.py
