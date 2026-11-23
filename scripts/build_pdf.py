@@ -174,7 +174,10 @@ def pdf(data):
     p(s,"关于作者与独立声明",st["h2"])
     p(s,"AI 酋长 Andy · 星觉科技。网站："+esc(data["home"])+"；企业服务："+esc(data["company"])+"；微信："+esc(data["wechat"])+"。本教程免费独立编写，与 Google 无官方合作关系，不承诺商业收益。",st["body"])
     p(s,"源代码："+esc(data["sourceRepo"]),st["small"])
-    # Deterministic PDF IDs/timestamps prevent binary conflicts on repeated CI runs.\n    rl_config.invariant = 1\n    doc.build(s,onFirstPage=decorate,onLaterPages=decorate,\n        canvasmaker=lambda *args, **kwargs: Canvas(*args, invariant=1, **kwargs))
+    # PDF bytes should be reproducible across builds.
+    rl_config.invariant = 1
+    doc.build(s,onFirstPage=decorate,onLaterPages=decorate,
+              canvasmaker=lambda *args, **kwargs: Canvas(*args, invariant=1, **kwargs))
     print(f"Built {DEST} ({DEST.stat().st_size:,} bytes)")
     return DEST
 
