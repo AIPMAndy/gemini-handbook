@@ -87,7 +87,13 @@ def decorate(canvas, doc):
     canvas.line(doc.leftMargin, h - 36, w - doc.rightMargin, h - 36)
     canvas.setFont("Helvetica", 7)
     canvas.setFillColor(colors.HexColor("#677b89"))
-    canvas.drawString(doc.leftMargin, 23, "AI CHIEF ANDY  /  GEMINI FIELD GUIDE  /  2026")
+    contact_prefix = "AI CHIEF ANDY  |  "
+    contact_domain = doc.author_site.rstrip("/").split("//")[-1]
+    contact_suffix = "  |  WeChat: " + doc.author_wechat
+    canvas.drawString(doc.leftMargin, 23, contact_prefix + contact_domain + contact_suffix)
+    site_start = doc.leftMargin + pdfmetrics.stringWidth(contact_prefix, "Helvetica", 7)
+    site_end = site_start + pdfmetrics.stringWidth(contact_domain, "Helvetica", 7)
+    canvas.linkURL(doc.author_site, (site_start, 19, site_end, 33), relative=0, thickness=0)
     canvas.drawRightString(w - doc.rightMargin, 23, f"{doc.page}")
     canvas.restoreState()
 
@@ -99,6 +105,8 @@ def pdf(data):
         topMargin=57, bottomMargin=48, title=data["title"] + " - " + data["author"],
         author=data["author"], subject="18 lessons, 32 prompts and 30-day plan",
         pageCompression=1, allowSplitting=1)
+    doc.author_site = data["home"]
+    doc.author_wechat = data["wechat"]
     s=[]
     s.append(Spacer(1,62))
     p(s,"AI CHIEF ANDY  /  FIELD GUIDE  /  PRACTICAL FIRST",st["brand"])
@@ -107,8 +115,10 @@ def pdf(data):
     s.append(HRFlowable(width="100%", thickness=2, color=TEAL, spaceBefore=20, spaceAfter=25))
     p(s,"18 个实战章节  ·  32 份指令模板  ·  7 天入门  ·  30 天项目路线",st["h3"])
     p(s,"版本 v"+esc(data["version"])+"　 官方资料核验："+esc(data["verified"]),st["body"])
-    p(s,"作者："+esc(data["author"])+"　 联系微信："+esc(data["wechat"]),st["body"])
-    p(s,'网站：<link href="'+esc(data["canonical"])+'" color="#1c7775">'+esc(data["canonical"])+"</link>",st["body"])
+    p(s,"作者："+esc(data["author"])+"　 微信："+esc(data["wechat"])+"（在微信搜索添加）",st["body"])
+    p(s,'个人官网：<link href="'+esc(data["home"])+'" color="#1c7775">'+esc(data["home"])+"</link>",st["body"])
+    p(s,'AI 咨询与陪跑：<link href="https://metaver.vip/services" color="#1c7775">https://metaver.vip/services</link>',st["body"])
+    p(s,'教程网站：<link href="'+esc(data["canonical"])+'" color="#1c7775">'+esc(data["canonical"])+"</link>",st["body"])
     p(s,"独立中文教程，非 Google 官方合作或授权产品。永久免费阅读，不强制留资。实际模型、权益与地区支持以 Google 最新官方资料为准。",st["small"])
     s.append(PageBreak())
     p(s,"阅读说明",st["h1"])
@@ -172,7 +182,7 @@ def pdf(data):
         p(s,esc(x["title"])+"（"+esc(x["type"])+"）",st["h3"])
         p(s,'<link href="'+esc(x["url"])+'" color="#1c7775">'+esc(x["url"])+"</link>",st["small"])
     p(s,"关于作者与独立声明",st["h2"])
-    p(s,"AI 酋长 Andy · 星觉科技。网站："+esc(data["home"])+"；企业服务："+esc(data["company"])+"；微信："+esc(data["wechat"])+"。本教程免费独立编写，与 Google 无官方合作关系，不承诺商业收益。",st["body"])
+    p(s,'AI 酋长 Andy · 星觉科技。个人官网：<link href="'+esc(data["home"])+'" color="#1c7775">'+esc(data["home"])+'</link>；AI 咨询与陪跑：<link href="https://metaver.vip/services" color="#1c7775">https://metaver.vip/services</link>；企业服务：<link href="'+esc(data["company"])+'" color="#1c7775">'+esc(data["company"])+'</link>；微信：'+esc(data["wechat"])+'。本教程免费独立编写，与 Google 无官方合作关系，不承诺商业收益。',st["body"])
     p(s,"源代码："+esc(data["sourceRepo"]),st["small"])
     # PDF bytes should be reproducible across builds.
     rl_config.invariant = 1

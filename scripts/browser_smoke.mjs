@@ -24,6 +24,11 @@ async function run(width, height) {
   assert(await page.locator('.day7').count() === 7, '7 daily checkboxes are rendered');
   assert(await page.locator('[data-role="day30"]').count() === 30, '30-day roadmap is rendered');
   assert(await page.locator('#resource-list a').count() === 12, '12 source links exist');
+  assert(await page.locator('.hero-contact a[href="https://metaver.vip/"]').count() === 1, 'personal website is prominent on first screen');
+  assert(await page.locator('#contact a[href="https://metaver.vip/services"]').count() === 1, 'consulting services link is visible');
+  assert(await page.locator('.hero-contact button[data-copy="wechat"]').count() === 1, 'WeChat copy action visible');
+  await page.locator('.hero-contact button[data-copy="wechat"]').click();
+  assert(await page.evaluate(async () => navigator.clipboard.readText()) === 'AIPMAndy', 'WeChat button actually copies correct ID');
   await page.screenshot({ path: join(screenshots, 'home-' + width + '.png'), fullPage: true });
   const overflow = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: window.innerWidth }));
   if (overflow.scroll > overflow.viewport + 1) {

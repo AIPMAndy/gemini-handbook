@@ -1,6 +1,6 @@
 # Gemini 保姆级实战攻略 · AI 酋长 Andy
 
-> 不是学会聊天，是学会交付。独立免费中文教程，**非 Google 官方**。
+> 不是学会聊天，是学会交付。独立免费中文教程，**非 Google 官方**。\n\n**作者联系：AI 酋长 Andy｜微信 `AIPMAndy`（在微信搜索添加）｜[个人官网 metaver.vip](https://metaver.vip/)｜[AI 咨询与陪跑服务](https://metaver.vip/services)｜[星觉科技](https://www.a6no1.cn/)。** 本教程永久免费阅读，联系作者完全自愿。
 
 - 🌐 在线网站：**https://aipmandy.github.io/gemini-handbook/**
 - 📘 完整 PDF：**https://aipmandy.github.io/gemini-handbook/downloads/gemini-practical-handbook.pdf**

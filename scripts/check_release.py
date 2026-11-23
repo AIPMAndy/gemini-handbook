@@ -45,6 +45,14 @@ assert len([x for x in data["prompts"] if x["title"] in full])>=30,"Missing prom
 assert len([m for m in data["modules"] if m["title"] in full])>=15,"Missing course chapters in PDF"
 link_count=sum(len(page.get_links()) for page in doc)
 assert link_count>=10,f"PDF links missing: {link_count}"
+assert data["wechat"] in pages[0], "Missing WeChat in PDF cover"
+assert "metaver.vip" in pages[0], "Missing personal website on PDF cover"
+assert all(data["wechat"] in body and "metaver.vip" in body for body in pages), "PDF footer lacks author website or WeChat on some pages"
+assert any(link.get("uri", "").startswith("https://metaver.vip") for page in doc for link in page.get_links()), "PDF personal website is not clickable"
+assert 'https://metaver.vip/' in index and 'data-copy="wechat"' in index, "Website contact link/copy action missing"
+assert 'https://metaver.vip/services' in index, "Service link missing"
+assert "https://metaver.vip/" in (ROOT/"print.html").read_text("utf-8"), "Print UI missing personal site"
+assert "https://metaver.vip/services" in (ROOT/"print.js").read_text("utf-8"), "Print edition missing service link"
 assert sum(len(page.get_text("blocks")) for page in doc)>150
 for i,page in enumerate(doc):
     assert page.rect.width>400 and page.rect.height>600

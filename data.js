@@ -1,7 +1,7 @@
 window.GEMINI_GUIDE = {
   "title": "Gemini 保姆级实战攻略",
   "subtitle": "从第一次提问，到研究、内容、数据、自动化与真实交付",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "verified": "2026-11-23",
   "author": "AI 酋长 Andy · 星觉科技",
   "wechat": "AIPMAndy",
