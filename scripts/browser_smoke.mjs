@@ -18,8 +18,8 @@ async function run(width, height) {
   const r = await page.goto(base, { waitUntil: 'networkidle' });
   assert(r?.status() === 200, `home page HTTP 200 at ${width}`);
   assert((await page.title()).includes('Gemini'), 'SEO title');
-  assert(await page.locator('.lesson').count() === 18, '18 modules are rendered');
-  assert(await page.locator('.prompt-card').count() === 32, '32 prompt cards are rendered');
+  assert(await page.locator('.lesson:visible').count() === 18, '18 modules are rendered');
+  assert(await page.locator('.prompt-card:visible').count() === 32, '32 prompt cards are rendered');
   assert(await page.locator('.path-card').count() === 5, '5 path cards are rendered');
   assert(await page.locator('.day7').count() === 7, '7 daily checkboxes are rendered');
   assert(await page.locator('[data-role="day30"]').count() === 30, '30-day roadmap is rendered');
@@ -40,24 +40,30 @@ async function run(width, height) {
   }
   assert(overflow.scroll <= overflow.viewport + 1, `horizontal overflow on ${width}px: ${JSON.stringify(overflow)}`);
 
+  const firstLesson=page.locator('.lesson').first();
+  await firstLesson.locator('summary').click();
+  const lessonId=await firstLesson.getAttribute('id');
   await page.locator('#lesson-search').fill('Deep Research');
-  const lessonCount = await page.locator('.lesson').count();
+  const lessonCount = await page.locator('.lesson:visible').count();
   assert(lessonCount > 0 && lessonCount < 18, 'lesson keyword search');
-  await page.locator('#lesson-search').fill('');
-  assert(await page.locator('.lesson').count() === 18, 'lesson search reset');
+  await page.locator('#lesson-reset').click();
+  assert(await page.locator('.lesson:visible').count() === 18, 'lesson search reset');
+  assert(await page.locator('#'+lessonId).getAttribute('open')!==null, 'expanded lesson state retained across filters');
+  assert(await page.locator('#lesson-search').evaluate(el=>document.activeElement===el), 'reset restores input focus');
+  await page.locator('#'+lessonId+' summary').click();
 
   await page.locator('[data-role="lesson-filter"][data-group="研究"]').click();
-  const filtered = await page.locator('.lesson').count();
+  const filtered = await page.locator('.lesson:visible').count();
   assert(filtered > 0 && filtered < 18, 'lesson category filter');
   await page.locator('[data-role="lesson-filter"][data-group="全部"]').click();
 
   await page.locator('#prompt-search').fill('求职');
-  assert(await page.locator('.prompt-card').count() > 0, 'prompt search');
+  assert(await page.locator('.prompt-card:visible').count() > 0, 'prompt search');
   await page.locator('#prompt-search').fill('');
   await page.locator('#prompt-category').selectOption('内容');
-  assert((await page.locator('.prompt-card').count()) > 0, 'prompt category filter');
+  assert((await page.locator('.prompt-card:visible').count()) > 0, 'prompt category filter');
   await page.locator('#prompt-category').selectOption('all');
-  assert(await page.locator('.prompt-card').count() === 32, 'prompt category reset');
+  assert(await page.locator('.prompt-card:visible').count() === 32, 'prompt category reset');
 
   await page.locator('[data-role="copy-prompt"]').first().click();
   const clip = await page.evaluate(async () => navigator.clipboard.readText());
@@ -67,10 +73,22 @@ async function run(width, height) {
   assert(await page.locator('[data-role="path"][data-path="founder"]').getAttribute('aria-pressed') === 'true', 'founder path activation');
   assert((await page.locator('#path-result').innerText()).includes('创业者'), 'recommended path content');
 
-  await page.locator('.day7 input[data-day="0"]').check();
+  const dayZero=page.locator('.day7 input[data-day="0"]');
+  await dayZero.focus();
+  await page.keyboard.press('Space');
+  assert(await dayZero.evaluate(el=>document.activeElement===el),'checking does not destroy focused checkbox');
   assert((await page.locator('#progress-percent').innerText()).trim() === '14%', '7-day checkbox progress');
   await page.reload({waitUntil:'networkidle'});
   assert(await page.locator('.day7 input[data-day="0"]').isChecked(), 'local progress persisted on reload');
+  page.once('dialog', d=>d.dismiss());await page.locator('#reset-progress').click();
+  assert(await page.locator('.day7 input[data-day="0"]').isChecked(),'cancel keeps progress');
+  page.once('dialog',d=>d.accept());await page.locator('#reset-progress').click();
+  assert(!(await page.locator('.day7 input[data-day="0"]').isChecked()),'confirmed reset');
+  await page.locator('#undo-progress').click();
+  assert(await page.locator('.day7 input[data-day="0"]').isChecked(),'undo restores progress');
+  assert(await page.locator('#progress-meter').getAttribute('aria-valuenow')==='14','accessible progress value');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert(await page.locator('#progress-bar').evaluate(el=>getComputedStyle(el).transitionDuration)==='0s','reduced motion disables progress animation');
 
   await page.locator('[data-role="day30"][data-day30="30"]').click();
   assert((await page.locator('#day30-detail').innerText()).includes('第 30 天'), '30-day task detail');
