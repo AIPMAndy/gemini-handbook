@@ -76,17 +76,17 @@
 </section>
 <section class="section wrap" id="lessons">
  <div class="section-head"><div><span class="section-num">02 / ALL LESSONS</span><h2>18 章。每章都能找到一件具体的事。</h2><p>每章都有目标、步骤、练习、交付文件、验收口径、风险提醒和官方来源。</p></div><a href="./print.html" class="quiet-link">查看完整印刷版 ↗</a></div>
- <div class="filters"><label class="input-label" for="lesson-search">搜索课程</label><input id="lesson-search" type="search" placeholder="例如：Canvas、研究、API、Skills、求职" autocomplete="off"><div id="lesson-filters" class="chips" aria-label="课程分类"></div></div>
+ <div class="filters"><label class="input-label" for="lesson-search">搜索课程</label><input id="lesson-search" type="search" placeholder="例如：Canvas、研究、API、Skills、求职" autocomplete="off"><div id="lesson-filters" class="chips" role="group" aria-label="课程分类"></div><span id="lesson-count" class="result-count" role="status"></span><button id="lesson-reset" class="filter-reset" type="button" hidden>清空筛选</button></div>
  <div class="lesson-list" id="lesson-list"></div><div class="empty" id="lesson-empty" hidden>没有找到对应章节，试试更短的关键词。</div>
 </section>
 <section class="section wrap" id="prompts">
  <div class="section-head"><div><span class="section-num">03 / COPY-READY PROMPTS</span><h2>32 个任务模板，不需要从零编提示词。</h2><p>每个模板都有输入、输出、验收和风险边界。复制后填入自己的授权材料，不把示例当作已实测结果。</p></div></div>
- <div class="filters prompt-filters"><label class="input-label" for="prompt-search">筛选指令</label><input id="prompt-search" type="search" placeholder="搜：短帖 / 周报 / 竞品 / 简历 / CLI / API" autocomplete="off"><label class="sr-only" for="prompt-category">模板分类</label><select id="prompt-category"><option value="all">全部场景</option></select><span id="prompt-count" class="result-count"></span></div>
+ <div class="filters prompt-filters"><label class="input-label" for="prompt-search">筛选指令</label><input id="prompt-search" type="search" placeholder="搜：短帖 / 周报 / 竞品 / 简历 / CLI / API" autocomplete="off"><label class="sr-only" for="prompt-category">模板分类</label><select id="prompt-category"><option value="all">全部场景</option></select><span id="prompt-count" class="result-count" role="status"></span><button id="prompt-reset" class="filter-reset" type="button" hidden>清空筛选</button></div>
  <div class="prompt-grid" id="prompt-grid"></div><div class="empty" id="prompt-empty" hidden>暂时没有符合条件的指令。</div>
 </section>
 <section class="section wrap" id="bootcamp">
  <div class="section-head"><div><span class="section-num">04 / LEARNING BY DOING</span><h2>7 天学会做事。30 天完成一个项目。</h2><p>在这个浏览器打卡，进度仅存本地，不需要登录。关键不是连续签到，而是每次留下一份真实成果。</p></div></div>
- <div class="bootcamp-grid"><div class="check-panel"><div class="check-panel-head"><div><span class="micro-label">7-DAY EXECUTION SPRINT</span><h3>7 天入门任务</h3></div><strong id="progress-percent">0%</strong></div><div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div><div id="day7-list" class="day7-list"></div><button id="reset-progress" class="reset-progress" type="button">清空本机打卡记录</button></div>
+ <div class="bootcamp-grid"><div class="check-panel"><div class="check-panel-head"><div><span class="micro-label">7-DAY EXECUTION SPRINT</span><h3>7 天入门任务</h3></div><strong id="progress-percent">0%</strong></div><div class="progress-track" id="progress-meter" role="progressbar" aria-label="7 天学习进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div><div id="day7-list" class="day7-list"></div><div class="progress-actions"><button id="reset-progress" class="reset-progress" type="button" disabled>清空本机打卡记录</button><button id="undo-progress" class="reset-progress" type="button" hidden>撤销清空</button></div><p id="progress-status" class="progress-status" role="status" hidden></p></div>
  <div class="calendar-panel"><div class="cal-head"><span class="micro-label">30-DAY PROJECT ROADMAP</span><h3>30 天实战挑战</h3><p>一周一个小里程碑，拒绝无产出的无限学习。</p></div><div id="day30-list" class="day30-grid"></div><div class="cal-foot">每周至少交付一个可打开、可复核、可分享的成果。</div></div></div>
 </section>
 <section class="section wrap" id="quality">

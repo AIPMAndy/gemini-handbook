@@ -30,3 +30,20 @@
 .hero-contact-wechat strong{color:var(--cyan)}.hero-contact-wechat span{color:#94aeb9;font-size:10px}
 .closing .closing-contact{color:#e2edf0}.closing-contact strong,.closing-contact a{color:var(--cyan)}.closing-contact a{overflow-wrap:anywhere}
 @media(max-width:580px){.hero-contact{margin-top:10px;padding:10px 12px;gap:9px 12px}.hero-contact-author{width:100%}.hero-contact-site,.hero-contact-wechat{font-size:11px}}
+/* Consistent state transitions without reconstructing active controls. */
+[hidden]{display:none!important}
+:root{--motion-fast:120ms;--motion-normal:180ms;--motion-ease:cubic-bezier(.2,0,0,1);color-scheme:dark}
+.filter-reset{min-height:40px;border:1px solid var(--line2);border-radius:8px;background:rgba(160,242,231,.08);color:var(--cyan);padding:8px 12px;font-size:12px;font-weight:650;white-space:nowrap}
+.progress-actions{display:flex;gap:14px;flex-wrap:wrap}
+.progress-actions .reset-progress{min-height:40px}
+.reset-progress:disabled{opacity:.42;cursor:not-allowed}
+.progress-status{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 0 0}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.filters input:focus-visible,.filters select:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.day7:has(input:focus-visible){outline:2px solid var(--cyan);outline-offset:3px;border-radius:8px}
+.progress-track span{width:100%;transform:scaleX(0);transform-origin:left;transition:transform var(--motion-normal) var(--motion-ease)}
+.chip,.filter-reset,.btn,.path-card,.day30-grid button{transition:background-color var(--motion-fast) var(--motion-ease),color var(--motion-fast) var(--motion-ease),border-color var(--motion-fast) var(--motion-ease),transform var(--motion-fast) var(--motion-ease)}
+.btn:hover,.path-card:hover{transform:none}
+.btn:active,.chip:active,.filter-reset:active,.day30-grid button:active{transform:scale(.985)}
+.toast{max-width:calc(100vw - 32px);width:max-content;overflow-wrap:anywhere;transition:opacity var(--motion-normal) var(--motion-ease),transform var(--motion-normal) var(--motion-ease)}
+@media(prefers-reduced-motion:reduce){.btn,.chip,.filter-reset,.path-card,.day30-grid button,.progress-track span,.toast{transition:none!important;animation:none!important}.btn:active,.chip:active,.filter-reset:active,.day30-grid button:active{transform:none!important}}
